@@ -1,0 +1,247 @@
+scp_program -> proc_color_graph (*
+
+	-> rrel_params: ... (*
+		-> rrel_1: rrel_in: _graph;;
+		-> rrel_2: rrel_out: _colors;;
+	*);;
+
+	-> rrel_operators: ... (*
+
+//Поиск множества вершин
+	-> rrel_init: ..proc_color_graph_start (*
+		<- searchSetStr5;;
+		-> rrel_1: rrel_fixed: rrel_scp_var: _graph;;
+		-> rrel_2: rrel_assign: rrel_pos_const_perm: rrel_scp_var: _arc2;;
+		-> rrel_3: rrel_assign: rrel_scp_var: _el3;;
+		-> rrel_4: rrel_assign: rrel_pos_const_perm: rrel_scp_var: _arc4;;
+		-> rrel_5: rrel_fixed: rrel_scp_const: rrel_nodes;;
+
+		->rrel_set_3: rrel_assign: rrel_scp_var: _nodes_set;;
+		=> nrel_then: ..proc_gen_node_for_colors_set;;
+		=> nrel_else: ..proc_nodes_set_not_found_error;;
+		*);;
+
+//Если множества нет - ошибка, выходим из программы
+	-> ..proc_nodes_set_not_found_error(*
+		<- printNl;;
+		-> rrel_1: rrel_fixed: rrel_scp_const: [Error: node set with relation 'rrel_nodes' not found];;
+		=> nrel_goto: ..proc_run_graph_coloring_return;;
+		*);;
+
+		-> ..proc_gen_node_for_colors_set(*
+			<-genEl;;
+			-> rrel_1: rrel_assign: rrel_const: rrel_node: rrel_scp_var: _colors;;
+
+			=> nrel_goto: ..proc_create_main_set_of_not_colored_vertexes;;
+			*);;
+
+//Создание главного множества нераскрашенных вершин
+	-> ..proc_create_main_set_of_not_colored_vertexes (*
+		<- searchSetStr3;;
+		-> rrel_1: rrel_fixed: rrel_scp_var: _nodes_set;;
+		-> rrel_2: rrel_assign: rrel_pos_const_perm: rrel_scp_var: _arc_of_main_set;;
+		-> rrel_3: rrel_assign: rrel_scp_var: _element;;
+		-> rrel_set_3: rrel_assign: rrel_scp_var: _not_colored_vertexes;;
+
+		=> nrel_goto: ..proc_start_main_cycle;;
+	*);;
+
+//Если есть ноды во множестве нераскрашенных вершин
+	-> ..proc_start_main_cycle (*
+		<- ifVarAssign;;
+		-> rrel_1: rrel_fixed: rrel_scp_var: _not_colored_vertexes;;
+
+		=> nrel_then: ..proc_is_color_assign;;
+		=> nrel_else: ..proc_clear_memory;;
+	*);;
+
+
+	-> ..proc_is_color_assign(*
+		<- ifVarAssign;;
+		-> rrel_1: rrel_fixed: rrel_scp_var: _colors;;
+
+		=> nrel_then: ..proc_create_node_of_the_current_color;;
+		=> nrel_else: ..proc_print_new_line;;
+	*);;
+
+	-> ..proc_print_new_line(*
+		<- printNl;;
+		-> rrel_1: rrel_fixed: rrel_scp_const: [|||||||||||||||not assign||||||||||||||||];;
+		=> nrel_goto: ..proc_run_graph_coloring_return;;
+	*);;
+
+//Создать новое множество вершин какого-то цвета
+	->	..proc_create_node_of_the_current_color(*
+			<-genElStr3;;
+			-> rrel_1: rrel_fixed: rrel_const: rrel_node: rrel_scp_var: _colors;;
+			-> rrel_2: rrel_assign: rrel_pos_const_perm: rrel_scp_var: _arc6;;
+			-> rrel_3: rrel_assign: rrel_const: rrel_node: rrel_scp_var: _current_color;;
+			=> nrel_goto: ..proc_check_not_colored_vertexes_set;;
+			*);;
+
+			//Проверка, есть ли во множестве _not_colored_vertexes элементы
+				-> ..proc_check_not_colored_vertexes_set (*
+					<- searchElStr3;;
+					-> rrel_1: rrel_fixed: rrel_scp_var: _not_colored_vertexes;;
+					-> rrel_2: rrel_assign: rrel_pos_const_perm: rrel_scp_var: _arc_main_temp2;;
+					-> rrel_3: rrel_assign: rrel_scp_var: _element_temp2;;
+
+					=> nrel_then: ..proc_create_temp_node_of_not_colored_vertexes;;
+					=> nrel_else: ..proc_clear_memory;;
+				*);;
+
+
+//Создать временное множество нераскрашенных вершин, чтобы меньше обходить вершин
+	-> ..proc_create_temp_node_of_not_colored_vertexes (*
+		<- searchSetStr3;;
+		-> rrel_1: rrel_fixed: rrel_scp_var: _not_colored_vertexes;;
+		-> rrel_2: rrel_assign: rrel_pos_const_perm: rrel_scp_var: _arc_main_temp;;
+		-> rrel_3: rrel_assign: rrel_scp_var: _element_temp;;
+		-> rrel_set_3: rrel_assign: rrel_scp_var: _not_colored_vertexes_temp;;
+
+		=> nrel_goto: ..proc_get_vertex_from_temp_not_colored_vertexes;;
+	*);;
+
+//Взять элемент из временного множеста
+	-> ..proc_get_vertex_from_temp_not_colored_vertexes (*
+		<- searchElStr3;;
+		-> rrel_1: rrel_fixed: rrel_scp_var: _not_colored_vertexes_temp;;
+		-> rrel_2: rrel_assign: rrel_pos_const_perm: rrel_scp_var: _current_arc_temp;;
+		-> rrel_3: rrel_assign: rrel_scp_var: _current_element;;
+
+		=> nrel_then: ..proc_erase_arc_for_vertex_from_temp_not_colored_vertexes;;
+		=> nrel_else: ..proc_erase_temp_not_colored_vertexes;;
+	*);;
+
+//Удалить временный узел и запустить основной цикл еще раз
+	-> ..proc_erase_temp_not_colored_vertexes (*
+		<- eraseEl;;
+		-> rrel_1: rrel_fixed: rrel_erase: rrel_scp_var: _not_colored_vertexes_temp;;
+
+		=> nrel_goto: ..proc_start_main_cycle;;
+	*);;
+
+//Удалить связь с взятым элементом, чтобы не взять его повторно
+	-> ..proc_erase_arc_for_vertex_from_temp_not_colored_vertexes (*
+		<- eraseEl;;
+		-> rrel_1: rrel_fixed: rrel_erase: rrel_scp_var: _current_arc_temp;;
+
+		=> nrel_goto: ..proc_get_all_adjacent_vertices;;
+	*);;
+
+//Создаем множество вершин, с которыми связана начальная вершина
+    -> ..proc_get_all_adjacent_vertices (*
+      <- searchSetStr5;;
+      -> rrel_1: rrel_fixed: rrel_scp_var: _current_element;;
+      -> rrel_2: rrel_assign: rrel_common: rrel_scp_var: _arc_main_last_1;;
+      -> rrel_3: rrel_assign: rrel_scp_var: _adjacent_vertex;;
+      -> rrel_4: rrel_assign: rrel_pos_const_perm: rrel_scp_var: _arc_main_last_2;;
+      -> rrel_5: rrel_fixed: rrel_scp_var: _graph;;
+      -> rrel_set_3: rrel_assign: rrel_scp_var: _neighbours_set;;
+      => nrel_then: ..proc_get_next_neighbour;;
+      => nrel_else: ..proc_neighnours_set_not_found_error;;
+    *);;
+
+		-> ..proc_neighnours_set_not_found_error (*
+			<- print;;
+			-> rrel_1: rrel_fixed: rrel_scp_const: [Error: neighbourse set with relation 'graph' not found with fixed element - ];;
+			=> nrel_goto: ..proc_neighnours_set_not_found_error2;;
+		*);;
+
+		-> ..proc_neighnours_set_not_found_error2 (*
+			<- call;;
+			-> rrel_1: rrel_fixed: rrel_scp_const: proc_print_idtf;;
+			-> rrel_2: rrel_fixed: rrel_scp_const: ... (*
+				-> rrel_1: rrel_fixed: rrel_scp_var: _current_element;;
+			*);;
+			-> rrel_3: rrel_assign: rrel_scp_var: _descr;;
+			=> nrel_goto: ..proc_neighnours_set_not_found_error3;;
+		*);;
+
+		-> ..proc_neighnours_set_not_found_error3 (*
+			<- call;;
+			-> rrel_1: rrel_fixed: rrel_scp_const: proc_print_idtf;;
+			-> rrel_2: rrel_fixed: rrel_scp_const: ... (*
+				-> rrel_1: rrel_fixed: rrel_scp_var: _graph;;
+			*);;
+			-> rrel_3: rrel_assign: rrel_scp_var: _descr;;
+			=> nrel_goto: ..proc_run_graph_coloring_return;;
+		*);;
+
+//получаем смежную вершину, если таких няма, добавляем вершину во множество вершин данного цвета
+//и удаляем множество смежных вершин
+    -> ..proc_get_next_neighbour (*
+        <- searchElStr3;;
+        -> rrel_1: rrel_fixed: rrel_scp_var: _neighbours_set;;
+        -> rrel_2: rrel_assign: rrel_scp_var: rrel_pos_const_perm: _neighbour_arc;;
+        -> rrel_3: rrel_assign: rrel_scp_var: _neghbour_vertex;;
+        => nrel_then: ..proc_erase_neghbour_arc;;
+        => nrel_else: ..proc_add_vertex_to_current_color_set;;
+       *);;
+
+			 //Удаляем дугу из множества смежных вершин, чтобы не взять ее повторно
+			 		-> ..proc_erase_neghbour_arc (*
+			 		      <- eraseEl;;
+			 		      -> rrel_1: rrel_fixed: rrel_erase: rrel_scp_var: _neighbour_arc;;
+			 		      => nrel_goto: ..proc_is_naighbour_has_same_color;;
+			 		   *);;
+
+	 -> ..proc_is_naighbour_has_same_color(*
+		 <- searchElStr3;;
+		 -> rrel_1: rrel_fixed: rrel_scp_var: _current_color;;
+		 -> rrel_2: rrel_assign: rrel_scp_var: rrel_pos_const_perm: _arc_between_current_color_and_neighbour;;
+		 -> rrel_3: rrel_fixed: rrel_scp_var: _neghbour_vertex;;
+		 => nrel_then: ..proc_end_neighbour_cycle_and_get_next_vertex;;
+		 => nrel_else: ..proc_get_next_neighbour;;
+		 *);;
+
+		-> ..proc_end_neighbour_cycle_and_get_next_vertex(*
+			<- eraseEl;;
+			-> rrel_1: rrel_fixed: rrel_erase: rrel_scp_var: _neighbours_set;;
+			=> nrel_goto: ..proc_get_vertex_from_temp_not_colored_vertexes;;
+			*);;
+
+//Добавляем эту вершину во множество данного цвета
+		-> ..proc_add_vertex_to_current_color_set(*
+			<-genElStr3;;
+			-> rrel_1: rrel_fixed: rrel_const: rrel_node: rrel_scp_var: _current_color;;
+			-> rrel_2: rrel_assign: rrel_pos_const_perm: rrel_scp_var: _arc666;;
+			-> rrel_3: rrel_fixed: rrel_const: rrel_node: rrel_scp_var: _current_element;;
+			=> nrel_goto: ..proc_find_arc_for_deleting;;
+			*);;
+
+		-> ..proc_find_arc_for_deleting(*
+			<- searchElStr3;;
+			-> rrel_1: rrel_fixed: rrel_scp_var: _not_colored_vertexes;;
+			-> rrel_2: rrel_assign: rrel_scp_var: rrel_pos_const_perm: _arc_for_deleting;;
+			-> rrel_3: rrel_fixed: rrel_scp_var: _current_element;;
+			=> nrel_then: ..proc_del_from_not_colored_set_curreny_element;;
+			=> nrel_else: ..proc_node_for_deleting_not_found;;
+			*);;
+
+			-> ..proc_node_for_deleting_not_found (*
+				<- print;;
+				-> rrel_1: rrel_fixed: rrel_scp_const: [Error: neighbour not found ];;
+				=> nrel_goto: ..proc_run_graph_coloring_return;;
+			*);;
+
+
+//Удаляем связь с вершиной между _not_colored_vertexes и _element, так как данная вершина только что расскрашена
+		-> ..proc_del_from_not_colored_set_curreny_element(*
+			<- eraseEl;;
+			-> rrel_1: rrel_fixed: rrel_erase: rrel_scp_var: _arc_for_deleting;;
+			=> nrel_goto: ..proc_end_neighbour_cycle_and_get_next_vertex;;
+			*);;
+
+//Очистка памяти (удаление узла, который содержит посещенные вершины)
+	->	..proc_clear_memory(*
+			<- eraseEl;;
+			-> rrel_1: rrel_fixed: rrel_scp_var: rrel_erase: _not_colored_vertexes;;
+			=> nrel_goto: ..proc_run_graph_coloring_return;;
+			*);;
+
+	-> ..proc_run_graph_coloring_return (*
+			<- return;;
+		*);;
+	*);;
+*);;

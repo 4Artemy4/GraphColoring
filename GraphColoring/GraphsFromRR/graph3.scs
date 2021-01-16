@@ -1,0 +1,5 @@
+graph -> G3(*
+	->rrel_nodes: V0; V1; V2; V3; V4;;
+	->rrel_arcs: ( V0 => V1 ); (V0 => V3); (V0=>V2); (V0=>V4);;
+	->rrel_arcs: ( V0 <= V1 ); (V0 <= V3); (V0<=V2); (V0<=V4);;
+*);;

@@ -1,0 +1,150 @@
+scp_program -> proc_run_test (*
+
+	-> rrel_params: ... (*
+		-> rrel_1: rrel_in: _graph;;
+		-> rrel_2: rrel_in: _test_number;;
+	*);;
+
+	-> rrel_operators: ... (*
+
+	-> rrel_init: ..proc_print_test_start (*
+			<-print;;
+			-> rrel_1: rrel_fixed: rrel_scp_const: [----------Test ];;
+
+			=> nrel_goto: ..proc_print_test_number;;
+		*);;
+
+		-> ..proc_print_test_number (*
+			<- call;;
+			-> rrel_1: rrel_fixed: rrel_scp_const: proc_print_idtf;;
+			-> rrel_2: rrel_fixed: rrel_scp_const: ... (*
+				-> rrel_1: rrel_fixed: rrel_scp_var: _graph;;
+			*);;
+			-> rrel_3: rrel_assign: rrel_scp_var: _descr;;
+
+			=> nrel_goto: ..proc_print_test_number_wait;;
+		*);;
+
+		-> ..proc_print_test_number_wait (*
+			<-waitReturn;;
+			-> rrel_1: rrel_fixed: rrel_scp_var: _descr;;
+
+		  	=> nrel_goto: ..proc_print_start_word;;
+		*);;
+
+	-> ..proc_print_start_word (*
+			<- printNl;;
+			-> rrel_1: rrel_fixed: rrel_scp_const: [ start----------];;
+
+			=> nrel_goto: ..proc_get_nodes_set;;
+		*);;
+
+	-> ..proc_get_nodes_set(*
+		<- searchSetStr5;;
+	 -> rrel_1: rrel_fixed: rrel_scp_var: _graph;;
+	 -> rrel_2: rrel_assign: rrel_pos_const_perm: rrel_scp_var: _arc2;;
+	 -> rrel_3: rrel_assign: rrel_scp_var: _el3;;
+	 -> rrel_4: rrel_assign: rrel_pos_const_perm: rrel_scp_var: _arc4;;
+	 -> rrel_5: rrel_fixed: rrel_scp_const: rrel_nodes;;
+
+	 ->rrel_set_3: rrel_assign: rrel_scp_var: _nodes_set;;
+	 => nrel_then: ..proc_run_testcase_operator1;;
+	 => nrel_else: ..proc_print_error;;
+
+		*);;
+
+		-> ..proc_run_testcase_operator1 (*
+					<- call;;
+					-> rrel_1: rrel_fixed: rrel_scp_const: proc_print_set;;
+					-> rrel_2: rrel_fixed: rrel_scp_const: ... (*
+						-> rrel_1: rrel_fixed: rrel_scp_var: _nodes_set;;
+					*);;
+					-> rrel_3: rrel_assign: rrel_scp_var: _descr;;
+
+					=> nrel_goto: ..proc_wait1;;
+				*);;
+
+		-> ..proc_wait1 (*
+				<- waitReturn;;
+				-> rrel_1: rrel_fixed: rrel_scp_var: _descr;;
+
+				=> nrel_goto: ..proc_print_new_line;;
+			*);;
+
+		-> ..proc_print_error(*
+			<- print;;
+			-> rrel_1: rrel_fixed: rrel_scp_const: [Error: set not found ];;
+
+			=> nrel_goto: ..proc_print_new_line;;
+			*);;
+
+	-> ..proc_print_new_line(*
+		<- printNl;;
+		-> rrel_1: rrel_fixed: rrel_scp_const: [ ];;
+		=> nrel_goto: ..proc_run_call_graph_coloring_function;;
+	*);;
+
+
+
+//Вызов функции, которая раскрасит граф и вернет множество цветов
+	-> ..proc_run_call_graph_coloring_function (*
+			<- call;;
+			-> rrel_1: rrel_fixed: rrel_scp_const: proc_color_graph;;
+			-> rrel_2: rrel_fixed: rrel_scp_const: ... (*
+				-> rrel_1: rrel_fixed: rrel_scp_var: _graph;;
+				-> rrel_2: rrel_assign: rrel_scp_var: _colors;;
+
+			*);;
+			-> rrel_3: rrel_assign: rrel_scp_var: _descr;;
+
+			=> nrel_goto: ..proc_wait2;;
+		*);;
+
+		-> ..proc_wait2 (*
+				<- waitReturn;;
+				-> rrel_1: rrel_fixed: rrel_scp_var: _descr;;
+
+				=> nrel_goto: ..proc_start_printing_colors;;
+			*);;
+
+//Вывод слова 'Colors:' на экран и вызов функции дальнейшей отрисовки
+	-> ..proc_start_printing_colors (*
+			<- printNl;;
+			-> rrel_1: rrel_fixed: rrel_scp_const: [Colors: ];;
+
+			=> nrel_goto: ..proc_run_testcase_operator3;;
+		*);;
+
+//Вызов функции отрисовки цветов графа и вершин
+	-> ..proc_run_testcase_operator3 (*
+			<- call;;
+			-> rrel_1: rrel_fixed: rrel_scp_const: proc_print_colored_vertexes;;
+			-> rrel_2: rrel_fixed: rrel_scp_const: ... (*
+				-> rrel_1: rrel_fixed: rrel_scp_var: _colors;;
+			*);;
+			-> rrel_3: rrel_assign: rrel_scp_var: _descr;;
+
+			=> nrel_goto: ..proc_run_testcase_operator2;;
+		*);;
+
+//Ожидание окончания работы предыдущего процесса и запуск окончания отрисовки
+	-> ..proc_run_testcase_operator2 (*
+			<- waitReturn;;
+			-> rrel_1: rrel_fixed: rrel_scp_var: _descr;;
+
+			=> nrel_goto: ..proc_run_testcase_print_test_finish;;
+		*);;
+
+//Вывод окончания теста
+	-> ..proc_run_testcase_print_test_finish (*
+			<- printNl;;
+			-> rrel_1: rrel_fixed: rrel_scp_const: [-----Test end-----];;
+
+			=> nrel_goto: ..proc_run_testcase_operator_return;;
+		*);;
+
+	-> ..proc_run_testcase_operator_return (*
+			<- return;;
+		*);;
+	*);;
+*);;
